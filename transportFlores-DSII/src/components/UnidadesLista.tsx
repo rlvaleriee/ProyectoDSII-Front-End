@@ -100,7 +100,7 @@ export function UnidadesLista({ handleViewChange }: UnidadesListaProps) {
                 <th>Año</th>
                 <th>Estado</th>
                 <th>Kilometraje Actual</th>
-                <th></th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
