@@ -1,52 +1,41 @@
-/* AdminLayout.css */
-
-/* Sidebar */
+/* Sidebar ancho normal */
 .sidebar {
-  width: 240px;
+  width: 250px;
   transition: width 0.3s ease;
-  flex-shrink: 0;
-  overflow: hidden;
-  white-space: nowrap;
+  overflow-x: hidden;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  padding-left: 1rem;
+  padding-right: 0;
 }
 
+/* Sidebar colapsado */
 .sidebar.collapsed {
-  width: 60px; /* Solo para íconos */
+  width: 70px;
+  padding-left: 0.5rem;
+  padding-right: 0;
 }
 
-/* Botones del sidebar */
-.sidebar .nav-link {
-  padding: 0.75rem 1rem;
-  text-align: left;
-  transition: all 0.3s;
-}
-
+/* Nav links, para que el texto desaparezca pero íconos queden centrados */
 .sidebar.collapsed .nav-link span {
   display: none;
 }
 
-/* Iconos centrados cuando está colapsado */
-.sidebar.collapsed .nav-link i {
-  margin: 0 auto;
+/* Aseguramos que los botones solo muestren iconos centrados al colapsar */
+.sidebar.collapsed .nav-link {
+  justify-content: center;
+  padding-left: 0;
 }
 
-/* Contenido principal */
+/* Contenido principal con margen al lado del sidebar normal */
 .content {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+  margin-left: 250px;
+  width: calc(100% - 250px);
+  transition: margin-left 0.3s ease, width 0.3s ease;
 }
 
-.full-screen {
-  width: 100%;
-}
-
-/* Header superior */
-header.sticky-top {
-  z-index: 1030; /* Sobre sidebar */
-}
-
-/* Transiciones limpias */
-.bi {
-  transition: transform 0.3s ease;
+/* Contenido principal expandido cuando sidebar está colapsado */
+.content.expanded {
+  margin-left: 70px;
+  width: calc(100% - 70px);
 }
