@@ -1,31 +1,26 @@
-export default function Layout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+// src/layout/Sidebar.tsx
+import { Link } from 'react-router-dom';
 
+export default function Sidebar() {
   return (
-    <>
-      {/* Sidebar */}
-      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
-
-      {/* Contenido principal */}
-      <div
-        style={{
-          filter: sidebarOpen ? 'brightness(0.7)' : 'none',
-          transition: 'filter 0.3s',
-          minHeight: '100vh',
-          padding: '1rem',
-        }}
-      >
-        <header className="bg-light p-4 shadow-sm sticky-top">
-          <h5 className="mb-0">Panel de Administración</h5>
-          <button onClick={() => setSidebarOpen(true)} className="btn btn-primary mt-2">
-            Abrir menú
-          </button>
-        </header>
-
-        <main>
-          {/* Aquí tu contenido */}
-        </main>
-      </div>
-    </>
+    <div className="bg-dark text-white vh-100 p-3" style={{ width: '250px' }}>
+      <h3 className="mb-4 text-nowrap overflow-hidden text-truncate">
+        🚛Transporte Flores
+      </h3>
+      <ul className="nav flex-column">
+        <li className="nav-item mb-2">
+          <Link to="/" className="nav-link text-white">Inicio</Link>
+        </li>
+        <li className="nav-item mb-2">
+          <Link to="/clientes" className="nav-link text-white">Clientes</Link>
+        </li>
+        <li className="nav-item mb-2">
+          <Link to="/envios" className="nav-link text-white">Envíos</Link>
+        </li>
+        <li className="nav-item mb-2">
+          <Link to="/unidades" className="nav-link text-white">Unidades</Link>
+        </li>
+      </ul>
+    </div>
   );
 }
