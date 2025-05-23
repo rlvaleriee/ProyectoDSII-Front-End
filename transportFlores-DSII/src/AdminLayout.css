@@ -1,0 +1,36 @@
+.sidebar {
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  width: 60px; /* ancho colapsado por defecto */
+  overflow: hidden;
+  transition: width 0.3s ease;
+  z-index: 1000;
+}
+
+.sidebar.expanded {
+  width: 250px; /* ancho expandido */
+}
+
+/* El contenido principal se posiciona con margen fijo */
+.content {
+  margin-left: 60px; /* siempre el ancho del sidebar colapsado */
+  max-width: 900px;
+  width: 100%;
+  margin-right: auto;
+  margin-left: 60px;
+  box-sizing: border-box;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease; /* opcional, para suavizar si quieres */
+}
+
+/* Para que el contenido no se mueva al expandir, no cambies el margin-left */
+
+/* Opcional: si quieres que el contenido no se estreche cuando sidebar crece */
+.content.expanded {
+  margin-left: 60px; /* sigue fijo */
+}
