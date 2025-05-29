@@ -15,7 +15,6 @@ export function UnidadesLista({ handleViewChange }: UnidadesListaProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedUnidad, setSelectedUnidad] = useState<IUnidades | undefined>();
 
-  // Obtiene las unidades de la API
   const obtenerUnidades = async () => {
     try {
       const response = await fetch(`${appsettings.apiUrl}Unidades/Lista`);
@@ -31,7 +30,6 @@ export function UnidadesLista({ handleViewChange }: UnidadesListaProps) {
     }
   };
 
-  // Elimina la unidad de la API
   const eliminarUnidad = async (id: number | string) => {
     const confirm = await Swal.fire({
       title: "¿Estás seguro?",
@@ -62,18 +60,15 @@ export function UnidadesLista({ handleViewChange }: UnidadesListaProps) {
     }
   };
 
-  // Obtiene las unidades al cargar el componente
   useEffect(() => {
     obtenerUnidades();
   }, []);
 
-  // Abrir modal para editar o crear una unidad
   const abrirModal = (unidad?: IUnidades) => {
     setSelectedUnidad(unidad);
     setModalOpen(true);
   };
-
-  // Cerrar modal
+  
   const cerrarModal = () => {
     setSelectedUnidad(undefined);
     setModalOpen(false);
@@ -124,7 +119,7 @@ export function UnidadesLista({ handleViewChange }: UnidadesListaProps) {
         unidad={selectedUnidad}
         onSuccess={() => {
           cerrarModal();
-          obtenerUnidades();  // Recarga la lista de unidades después de editar o crear
+          obtenerUnidades(); 
         }}
       />
     </div>

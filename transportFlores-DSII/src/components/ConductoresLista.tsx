@@ -15,7 +15,6 @@ export function ConductoreLista({ handleViewChange }: ConductoreListaProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedConductore, setSelectedConductore] = useState<IConductore | undefined>();
 
-  // Obtener conductores desde la API
   const obtenerConductores = async () => {
     try {
       const apiUrl = appsettings.apiUrl.endsWith("/")
@@ -109,7 +108,6 @@ export function ConductoreLista({ handleViewChange }: ConductoreListaProps) {
         </div>
       </div>
 
-      {/* DataTable para mostrar la lista de conductores */}
       <DataTable<IConductore>
         data={conductores}
         searchKeys={["nombre", "telefono", "licencia"]}
@@ -144,7 +142,6 @@ export function ConductoreLista({ handleViewChange }: ConductoreListaProps) {
         ]}
       />
 
-      {/* Modal Crear/Editar Conductor */}
       <ConductoreModal
         isOpen={modalOpen}
         toggle={cerrarModal}

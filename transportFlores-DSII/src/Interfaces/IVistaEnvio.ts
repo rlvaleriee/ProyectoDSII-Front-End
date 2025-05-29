@@ -1,7 +1,7 @@
 export interface IVistaEnvio {
   idEnvios: number;
-  idCliente: number;       // agregado para edición
-  idRuta: number;          // agregado para edición
+  idCliente: number;      
+  idRuta: number;         
   fechaSolicitud: string;
   fechaEntregaEsperada: string;
   estado: string;

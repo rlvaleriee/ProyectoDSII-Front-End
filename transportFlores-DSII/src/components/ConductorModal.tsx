@@ -11,13 +11,13 @@ import {
   Button,
 } from "reactstrap";
 import Swal from "sweetalert2";
-import type { IConductore } from "../Interfaces/IConductor"; // Cambiar de ICliente a IConductore
+import type { IConductore } from "../Interfaces/IConductor"; 
 import { appsettings } from "../settings/appsettings";
 
 interface ConductoreModalProps {
   isOpen: boolean;
   toggle: () => void;
-  conductore?: IConductore;  // Cambiar de Cliente a Conductore
+  conductore?: IConductore; 
   onSuccess: () => void;
 }
 
@@ -34,7 +34,7 @@ export function ConductoreModal({
     estado: conductore?.estado ?? "",
     telefono: conductore?.telefono ?? "",
     idVehiculo: conductore?.idVehiculo ?? undefined,
-    fechaIngreso: conductore?.fechaIngreso ?? "", // Añadir la fecha de ingreso
+    fechaIngreso: conductore?.fechaIngreso ?? "", 
   });
 
   useEffect(() => {
@@ -48,7 +48,7 @@ export function ConductoreModal({
         estado: "",
         telefono: "",
         idVehiculo: undefined,
-        fechaIngreso: "", // Asegurarse de que esté vacío si no hay conductor seleccionado
+        fechaIngreso: "", 
       });
     }
   }, [conductore, isOpen]);
@@ -67,14 +67,13 @@ export function ConductoreModal({
       ? `${appsettings.apiUrl}Conductor/Editar`
       : `${appsettings.apiUrl}Conductor/Nuevo`;
 
-    // Convertir fecha de ingreso solo a la fecha (sin la hora) en formato 'YYYY-MM-DD'
     const fechaIngresoFormatted = formData.fechaIngreso
-      ? formData.fechaIngreso.split('T')[0] // Solo toma la parte de la fecha
+      ? formData.fechaIngreso.split('T')[0] 
       : undefined;
 
     const dataToSubmit = {
       ...formData,
-      fechaIngreso: fechaIngresoFormatted, // Asegurarse de que la fecha esté en el formato correcto
+      fechaIngreso: fechaIngresoFormatted, 
     };
 
     const response = await fetch(url, {
@@ -98,7 +97,6 @@ export function ConductoreModal({
     Swal.fire("Error", String(error), "error");
   }
 };
-
 
   return (
     <Modal isOpen={isOpen} toggle={toggle}>
@@ -162,7 +160,6 @@ export function ConductoreModal({
             />
           </FormGroup>
 
-          {/* Campo Fecha de Ingreso */}
           <FormGroup>
             <Label for="fechaIngreso">Fecha de Ingreso</Label>
             <Input

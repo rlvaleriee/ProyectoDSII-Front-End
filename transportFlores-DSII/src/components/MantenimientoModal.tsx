@@ -52,7 +52,6 @@ export function MantenimientoModal({
   ) => {
     const { name, value } = e.target;
 
-    // Para idUnidad que es number opcional, convertir el valor si no está vacío
     if (name === "idUnidad") {
       setFormData((prev) => ({
         ...prev,

@@ -6,9 +6,10 @@ import { UnidadesLista } from '../components/UnidadesLista';
 import { UsuarioLista } from '../components/UsuarioLista';  
 import { ConductoreLista } from '../components/ConductoresLista';
 import Dashboard from '../components/Dashboard';
+import { MantenimientoLista } from '../components/MantenimientoLista';// Asegúrate de crear este componente
 
 export default function AdminLayout() {
-  const [view, setView] = useState<'dashboard' | 'clientes' | 'unidades' | 'envios' | 'usuarios'| 'conductores'>('dashboard'); // ⬅️ Agregado 'usuarios'
+  const [view, setView] = useState<'dashboard' | 'clientes' | 'unidades' | 'envios' | 'usuarios' | 'conductores' | 'mantenimiento'>('dashboard'); // Agregar 'mantenimiento'
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
   const handleViewChange = (newView: typeof view) => {
@@ -51,8 +52,12 @@ export default function AdminLayout() {
             {!sidebarCollapsed && <span>Usuarios</span>}
           </button>
           <button className="nav-link text-white d-flex align-items-center" onClick={() => handleViewChange('conductores')}>
-            <i className="bi bi-person-check-fill me-2"></i> 
+            <i className="bi bi-person-check-fill me-2"></i>
             {!sidebarCollapsed && <span>Conductores</span>}
+          </button>
+          <button className="nav-link text-white d-flex align-items-center" onClick={() => handleViewChange('mantenimiento')}>
+            <i className="bi bi-tools me-2"></i>
+            {!sidebarCollapsed && <span>Mantenimiento</span>}
           </button>
         </nav>
       </aside>
@@ -70,8 +75,9 @@ export default function AdminLayout() {
           {view === 'clientes' && <ClienteLista handleViewChange={handleViewChange} />}
           {view === 'unidades' && <UnidadesLista handleViewChange={handleViewChange} />}
           {view === 'envios' && <EnviosLista handleViewChange={handleViewChange} />}
-          {view === 'usuarios' && <UsuarioLista handleViewChange={handleViewChange} />} 
+          {view === 'usuarios' && <UsuarioLista handleViewChange={handleViewChange} />}
           {view === 'conductores' && <ConductoreLista handleViewChange={handleViewChange} />}
+          {view === 'mantenimiento' && <MantenimientoLista handleViewChange={handleViewChange} />}
         </main>
       </div>
     </div>

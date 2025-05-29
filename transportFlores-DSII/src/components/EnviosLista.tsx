@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { appsettings } from "../settings/appsettings";
 import type { IVistaEnvio } from "../Interfaces/IVistaEnvio";
-import type { IEnvios } from "../Interfaces/IEnvios"; // solo si lo necesitas
+import type { IEnvios } from "../Interfaces/IEnvios"; 
 import { EnviosModal } from "./EnviosModal";
 import { Button } from "reactstrap";
 import Swal from "sweetalert2";

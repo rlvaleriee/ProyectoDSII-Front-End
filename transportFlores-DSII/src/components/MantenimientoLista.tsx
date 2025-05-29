@@ -97,7 +97,6 @@ export function MantenimientoLista({ handleViewChange }: MantenimientoListaProps
         ]}
       />
 
-      {/* Modal Crear/Editar */}
       <MantenimientoModal
         isOpen={modalOpen}
         toggle={cerrarModal}
