@@ -1,33 +1,33 @@
 import { useEffect, useState } from "react";
 import { appsettings } from "../settings/appsettings";
-import type { ICliente } from "../Interfaces/ICliente";
-import { ClienteModal } from "./ClienteModal";
+import type { IUsuario } from "../Interfaces/IUsuario";
+import { UsuarioModal } from "./UsuarioModal";
 import { Button } from "reactstrap";
 import Swal from "sweetalert2";
 import { DataTable } from "./DataTable";
 
-interface ClienteListaProps {
+interface UsuarioListaProps {
   handleViewChange: (view: "dashboard") => void;
 }
 
-export function ClienteLista({ handleViewChange }: ClienteListaProps) {
-  const [clientes, setClientes] = useState<ICliente[]>([]);
+export function UsuarioLista({ handleViewChange }: UsuarioListaProps) {
+  const [usuarios, setUsuarios] = useState<IUsuario[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedCliente, setSelectedCliente] = useState<ICliente | undefined>();
+  const [selectedUsuario, setSelectedUsuario] = useState<IUsuario | undefined>();
 
-  const obtenerClientes = async () => {
+  const obtenerUsuarios = async () => {
     try {
-      const response = await fetch(`${appsettings.apiUrl}Cliente/Lista`);
+      const response = await fetch(`${appsettings.apiUrl}Usuario/Lista`);
       if (response.ok) {
         const data = await response.json();
-        setClientes(data);
+        setUsuarios(data);
       }
     } catch (error) {
-      console.error("Error al obtener clientes:", error);
+      console.error("Error al obtener usuarios:", error);
     }
   };
 
-  const eliminarCliente = async (id: number | string) => {
+  const eliminarUsuario = async (id: number | string) => {
     const confirm = await Swal.fire({
       title: "¿Estás seguro?",
       text: "¡Esta acción no se puede deshacer!",
@@ -38,33 +38,33 @@ export function ClienteLista({ handleViewChange }: ClienteListaProps) {
     });
 
     if (confirm.isConfirmed) {
-      const response = await fetch(`${appsettings.apiUrl}Cliente/Eliminar/${id}`, {
+      const response = await fetch(`${appsettings.apiUrl}Usuario/Eliminar/${id}`, {
         method: "DELETE",
       });
       if (response.ok) {
-        obtenerClientes();
+        obtenerUsuarios();
       }
     }
   };
 
   useEffect(() => {
-    obtenerClientes();
+    obtenerUsuarios();
   }, []);
 
-  const abrirModal = (cliente?: ICliente) => {
-    setSelectedCliente(cliente);
+  const abrirModal = (usuario?: IUsuario) => {
+    setSelectedUsuario(usuario);
     setModalOpen(true);
   };
 
   const cerrarModal = () => {
-    setSelectedCliente(undefined);
+    setSelectedUsuario(undefined);
     setModalOpen(false);
   };
 
   return (
     <div className="mt-2">
       <div className="d-flex justify-content-between align-items-center mb-3 px-3">
-        <h4 className="m-0">Lista de Clientes</h4>
+        <h4 className="m-0">Lista de Usuarios</h4>
         <div className="d-flex gap-2">
           <Button
             color="secondary"
@@ -76,36 +76,33 @@ export function ClienteLista({ handleViewChange }: ClienteListaProps) {
           </Button>
           <Button color="success" size="sm" onClick={() => abrirModal()}>
             <i className="bi bi-plus-circle me-2" />
-            Nuevo Cliente
+            Nuevo Usuario
           </Button>
         </div>
       </div>
 
-      <DataTable<ICliente>
-        data={clientes}
-        searchKeys={["nombreCliente", "email", "telefono"]}
+      <DataTable<IUsuario>
+        data={usuarios}
+        searchKeys={["nombreUsuario", "email", "rol"]}
         itemsPerPageOptions={[5, 10, 15]}
         defaultItemsPerPage={5}
-        onEditar={(cliente) => abrirModal(cliente)}
-        onEliminar={(id) => eliminarCliente(id)}
+        onEditar={(usuario) => abrirModal(usuario)}
+        onEliminar={(id) => eliminarUsuario(id)}
         onNuevo={() => abrirModal()}
         columns={[
-          { key: "nombreCliente", label: "Nombre" },
-          { key: "direccion", label: "Dirección" },
-          { key: "telefono", label: "Teléfono" },
+          { key: "nombreUsuario", label: "Nombre Usuario" },
           { key: "email", label: "Correo" },
-          { key: "tipoCliente", label: "Tipo Cliente" },
+          { key: "rol", label: "Rol" },
         ]}
       />
 
-      {/* Modal Crear/Editar */}
-      <ClienteModal
+      <UsuarioModal
         isOpen={modalOpen}
         toggle={cerrarModal}
-        cliente={selectedCliente}
+        usuario={selectedUsuario}
         onSuccess={() => {
           cerrarModal();
-          obtenerClientes();
+          obtenerUsuarios();
         }}
       />
     </div>

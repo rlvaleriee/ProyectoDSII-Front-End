@@ -3,13 +3,15 @@ import './AdminLayout.css';
 import { ClienteLista } from '../components/ClienteLista';
 import { EnviosLista } from '../components/EnviosLista'; 
 import { UnidadesLista } from '../components/UnidadesLista'; 
+import { UsuarioLista } from '../components/UsuarioLista';  
+import { ConductoreLista } from '../components/ConductoresLista';
 import Dashboard from '../components/Dashboard';
 
 export default function AdminLayout() {
-  const [view, setView] = useState<'dashboard' | 'clientes' | 'unidades' | 'envios'>('dashboard');
+  const [view, setView] = useState<'dashboard' | 'clientes' | 'unidades' | 'envios' | 'usuarios'| 'conductores'>('dashboard'); // ⬅️ Agregado 'usuarios'
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
-  const handleViewChange = (newView: 'dashboard' | 'clientes' | 'unidades' | 'envios') => {
+  const handleViewChange = (newView: typeof view) => {
     setView(newView);
   };
 
@@ -44,22 +46,32 @@ export default function AdminLayout() {
             <i className="bi bi-send-check-fill me-2"></i>
             {!sidebarCollapsed && <span>Envíos</span>}
           </button>
+          <button className="nav-link text-white d-flex align-items-center" onClick={() => handleViewChange('usuarios')}>
+            <i className="bi bi-person-lines-fill me-2"></i>
+            {!sidebarCollapsed && <span>Usuarios</span>}
+          </button>
+          <button className="nav-link text-white d-flex align-items-center" onClick={() => handleViewChange('conductores')}>
+            <i className="bi bi-person-check-fill me-2"></i> 
+            {!sidebarCollapsed && <span>Conductores</span>}
+          </button>
         </nav>
       </aside>
 
       {/* Contenedor principal: vertical con header y contenido */}
       <div className="d-flex flex-column flex-grow-1" style={{ minHeight: '100vh' }}>
-        {/* Header fijo arriba */}
+        {/* Header */}
         <header className="bg-light p-4 shadow-sm sticky-top" style={{ zIndex: 10 }}>
           <h5 className="mb-0">Panel de Administración</h5>
         </header>
 
-        {/* Contenido principal relleno */}
+        {/* Contenido principal */}
         <main className="p-4 flex-grow-1 overflow-auto">
           {view === 'dashboard' && <Dashboard handleViewChange={handleViewChange} />}
           {view === 'clientes' && <ClienteLista handleViewChange={handleViewChange} />}
           {view === 'unidades' && <UnidadesLista handleViewChange={handleViewChange} />}
           {view === 'envios' && <EnviosLista handleViewChange={handleViewChange} />}
+          {view === 'usuarios' && <UsuarioLista handleViewChange={handleViewChange} />} 
+          {view === 'conductores' && <ConductoreLista handleViewChange={handleViewChange} />}
         </main>
       </div>
     </div>

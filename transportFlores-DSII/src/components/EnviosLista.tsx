@@ -1,31 +1,67 @@
-// EnviosLista.tsx
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { appsettings } from "../settings/appsettings";
-import Swal from "sweetalert2";
-import type { IEnvios } from "../Interfaces/IEnvios";
-import { Container, Row, Col, Table, Button } from "reactstrap";
+import type { IVistaEnvio } from "../Interfaces/IVistaEnvio";
+import type { IEnvios } from "../Interfaces/IEnvios"; // solo si lo necesitas
 import { EnviosModal } from "./EnviosModal";
-import "bootstrap-icons/font/bootstrap-icons.css";
+import { Button } from "reactstrap";
+import Swal from "sweetalert2";
+import { DataTable } from "./DataTable";
 
 interface EnviosListaProps {
-  handleViewChange: (view: 'dashboard') => void;
+  handleViewChange: (view: "dashboard") => void;
 }
 
 export function EnviosLista({ handleViewChange }: EnviosListaProps) {
-  const [envios, setEnvios] = useState<IEnvios[]>([]);
+  const [envios, setEnvios] = useState<IVistaEnvio[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedEnvio, setSelectedEnvio] = useState<IEnvios>();
-
-  const toggleModal = () => setModalOpen(!modalOpen);
+  const [selectedEnvio, setSelectedEnvio] = useState<IVistaEnvio | undefined>();
 
   const obtenerEnvios = async () => {
     try {
-      const response = await fetch(`${appsettings.apiUrl}Envio/Lista`);
+      const response = await fetch(`${appsettings.apiUrl}VistaEnvio/Lista`);
       if (response.ok) {
-        setEnvios(await response.json());
+        const data: IVistaEnvio[] = await response.json();
+
+        const enviosLimpios = data.map(e => ({
+          idEnvios: e.idEnvios,
+          idCliente: e.idCliente,
+          idRuta: e.idRuta,
+          fechaSolicitud: e.fechaSolicitud ?? "",
+          fechaEntregaEsperada: e.fechaEntregaEsperada ?? "",
+          estado: e.estado ?? "",
+          mercancia: e.mercancia ?? "",
+          peso: e.peso ?? 0,
+          volumen: e.volumen ?? 0,
+          cliente: e.cliente ?? "Desconocido",
+          origen: e.origen ?? "Desconocido",
+          destino: e.destino ?? "Desconocido",
+          costo: e.costo ?? 0,
+        }));
+
+        setEnvios(enviosLimpios);
       }
     } catch (error) {
       console.error("Error al obtener envíos:", error);
+    }
+  };
+
+  const eliminarEnvio = async (id: number | string) => {
+    const confirm = await Swal.fire({
+      title: "¿Estás seguro?",
+      text: "¡Esta acción no se puede deshacer!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    });
+
+    if (confirm.isConfirmed) {
+      const response = await fetch(`${appsettings.apiUrl}Envio/Eliminar/${id}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        obtenerEnvios();
+      }
     }
   };
 
@@ -33,117 +69,75 @@ export function EnviosLista({ handleViewChange }: EnviosListaProps) {
     obtenerEnvios();
   }, []);
 
-  const onNuevo = () => {
-    setSelectedEnvio(undefined);
-    toggleModal();
-  };
-
-  const onEditar = (envio: IEnvios) => {
+  const abrirModal = (envio?: IVistaEnvio) => {
     setSelectedEnvio(envio);
-    toggleModal();
+    setModalOpen(true);
   };
 
-  const Eliminar = (id: number) => {
-    Swal.fire({
-      title: "¿Estás seguro?",
-      text: "¡No podrás revertir esto!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Sí, eliminar"
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        const response = await fetch(`${appsettings.apiUrl}Envio/Eliminar/${id}`, {
-          method: "DELETE"
-        });
-        if (response.ok) obtenerEnvios();
-      }
-    });
+  const cerrarModal = () => {
+    setSelectedEnvio(undefined);
+    setModalOpen(false);
   };
 
   return (
-    <Container className="mt-5">
-      <Row>
-        <Col sm={{ size: 8, offset: 2 }}>
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <h4 className="m-0">Lista de Envíos</h4>
-            <div className="d-flex gap-2">
-              <Button
-                className="btn btn-secondary btn-sm shadow-sm"
-                onClick={() => handleViewChange("dashboard")}
-              >
-                <i className="bi bi-house-door me-2" />
-                Inicio
-              </Button>
-              <Button color="success" onClick={onNuevo}>
-                <i className="bi bi-plus-circle me-2" />
-                Nuevo Envío
-              </Button>
-            </div>
-          </div>
-
-          <Table
-            bordered
-            hover
-            responsive
-            className="align-middle text-center table-striped table-bordered text-nowrap"
+    <div className="mt-2">
+      <div className="d-flex justify-content-between align-items-center mb-3 px-3">
+        <h4 className="m-0">Lista de Envíos</h4>
+        <div className="d-flex gap-2">
+          <Button
+            color="secondary"
+            size="sm"
+            onClick={() => handleViewChange("dashboard")}
           >
-            <thead>
-              <tr>
-                <th>Cliente</th>
-                <th>Ruta</th>
-                <th>Fecha Solicitud</th>
-                <th>Entrega Esperada</th>
-                <th>Estado</th>
-                <th>Mercancía</th>
-                <th>Peso (kg)</th>
-                <th>Volumen (m³)</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {envios.map((item) => (
-                <tr key={item.idEnvios}>
-                  <td>{item.idCliente}</td>
-                  <td>{item.idRuta}</td>
-                  <td>{item.fechaSolicitud}</td>
-                  <td>{item.fechaEntregaEsperada}</td>
-                  <td>{item.estado}</td>
-                  <td>{item.mercancia}</td>
-                  <td>{item.pesoTotal}</td>
-                  <td>{item.volumenTotal}</td>
-                  <td>
-                    <div className="d-flex justify-content-center gap-2">
-                      <Button
-                        size="sm"
-                        color="primary"
-                        onClick={() => onEditar(item)}
-                      >
-                        <i className="bi bi-pencil-square" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        color="danger"
-                        onClick={() => Eliminar(item.idEnvios!)}
-                      >
-                        <i className="bi bi-trash" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </Col>
-      </Row>
+            <i className="bi bi-house-door me-2" />
+            Inicio
+          </Button>
+          <Button color="success" size="sm" onClick={() => abrirModal()}>
+            <i className="bi bi-plus-circle me-2" />
+            Nuevo Envío
+          </Button>
+        </div>
+      </div>
+
+      <DataTable<IVistaEnvio>
+        data={envios}
+        searchKeys={[
+          "estado",
+          "mercancia",
+          "fechaSolicitud",
+          "fechaEntregaEsperada",
+          "cliente",
+          "origen",
+          "destino",
+        ]}
+        itemsPerPageOptions={[5, 10, 15]}
+        defaultItemsPerPage={5}
+        onEditar={(envio) => abrirModal(envio)}
+        onEliminar={(id) => eliminarEnvio(id)}
+        onNuevo={() => abrirModal()}
+        columns={[
+          { key: "cliente", label: "Cliente" },
+          { key: "origen", label: "Origen" },
+          { key: "destino", label: "Destino" },
+          { key: "fechaSolicitud", label: "Fecha Solicitud" },
+          { key: "fechaEntregaEsperada", label: "Fecha Entrega Esperada" },
+          { key: "estado", label: "Estado" },
+          { key: "mercancia", label: "Mercancía" },
+          { key: "peso", label: "Peso (kg)" },
+          { key: "volumen", label: "Volumen (m³)" },
+          { key: "costo", label: "Costo Envío" },
+        ]}
+      />
 
       <EnviosModal
         isOpen={modalOpen}
-        toggle={toggleModal}
-        envio={selectedEnvio}
-        onSuccess={obtenerEnvios}
+        toggle={cerrarModal}
+        
+        onSuccess={() => {
+          cerrarModal();
+          obtenerEnvios();
+        }}
       />
-    </Container>
+    </div>
   );
 }

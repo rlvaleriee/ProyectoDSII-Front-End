@@ -1,4 +1,3 @@
-// EnviosModal.tsx
 import { useState, useEffect } from "react";
 import {
   Modal,
@@ -9,10 +8,12 @@ import {
   FormGroup,
   Label,
   Input,
-  Button
+  Button,
 } from "reactstrap";
 import Swal from "sweetalert2";
 import type { IEnvios } from "../Interfaces/IEnvios";
+import type { ICliente } from "../Interfaces/ICliente";
+import type { IRuta } from "../Interfaces/IRuta";
 import { appsettings } from "../settings/appsettings";
 
 interface EnviosModalProps {
@@ -22,22 +23,21 @@ interface EnviosModalProps {
   onSuccess: () => void;
 }
 
-export function EnviosModal({
-  isOpen,
-  toggle,
-  envio,
-  onSuccess
-}: EnviosModalProps) {
+export function EnviosModal({ isOpen, toggle, envio, onSuccess }: EnviosModalProps) {
+  const [clientes, setClientes] = useState<ICliente[]>([]);
+  const [rutas, setRutas] = useState<IRuta[]>([]);
+
   const [formData, setFormData] = useState<IEnvios>({
-    idEnvios: envio?.idEnvios ?? 0,
-    idCliente: envio?.idCliente ?? 0,
-    idRuta: envio?.idRuta ?? 0,
-    fechaSolicitud: envio?.fechaSolicitud ?? "",
-    fechaEntregaEsperada: envio?.fechaEntregaEsperada ?? "",
-    estado: envio?.estado ?? "",
-    mercancia: envio?.mercancia ?? "",
-    pesoTotal: envio?.pesoTotal ?? 0,
-    volumenTotal: envio?.volumenTotal ?? 0
+    idEnvios: 0,
+    idCliente: 0,
+    idRuta: 0,
+    fechaSolicitud: "",
+    fechaEntregaEsperada: "",
+    estado: "",
+    mercancia: "",
+    pesoTotal: 0,
+    volumenTotal: 0,
+    CostoEnvio: 0,
   });
 
   useEffect(() => {
@@ -53,39 +53,66 @@ export function EnviosModal({
         estado: "",
         mercancia: "",
         pesoTotal: 0,
-        volumenTotal: 0
+        volumenTotal: 0,
+        CostoEnvio: 0,
       });
     }
   }, [envio, isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const fetchData = async () => {
+      try {
+        const clientesResp = await fetch(`${appsettings.apiUrl}Cliente/Lista`);
+        if (clientesResp.ok) setClientes(await clientesResp.json());
+
+        const rutasResp = await fetch(`${appsettings.apiUrl}Ruta/Lista`);
+        if (rutasResp.ok) setRutas(await rutasResp.json());
+      } catch (error) {
+        console.error("Error al cargar datos:", error);
+      }
+    };
+
+    fetchData();
+  }, [isOpen]);
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
+    const { name, value, type } = e.target;
+    setFormData((prev) => ({
       ...prev,
       [name]:
-        e.target.type === "number" ? parseFloat(value) : value
+        type === "number" || e.target.tagName === "SELECT"
+          ? value === "" ? 0 : Number(value)
+          : value,
     }));
   };
 
   const handleSubmit = async () => {
+    if (!formData.idCliente || !formData.idRuta) {
+      Swal.fire("Error", "Debe seleccionar un cliente y una ruta.", "error");
+      return;
+    }
+
     try {
-      const method = envio ? "PUT" : "POST";
-      const url = envio
-        ? `${appsettings.apiUrl}Envio/Editar`
-        : `${appsettings.apiUrl}Envio/Nuevo`;
+      const method = formData.idEnvios && formData.idEnvios > 0 ? "PUT" : "POST";
+      const url =
+        method === "PUT"
+          ? `${appsettings.apiUrl}Envio/Editar`
+          : `${appsettings.apiUrl}Envio/Nuevo`;
 
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
 
       if (response.ok) {
         Swal.fire({
-          title: envio ? "Envío actualizado" : "Envío creado",
-          icon: "success"
+          title: method === "PUT" ? "Envío actualizado" : "Envío creado",
+          icon: "success",
         });
         onSuccess();
         toggle();
@@ -93,38 +120,54 @@ export function EnviosModal({
         const text = await response.text();
         Swal.fire("Error", text, "error");
       }
-    } catch (err) {
-      Swal.fire("Error", String(err), "error");
+    } catch (error) {
+      Swal.fire("Error", String(error), "error");
     }
   };
 
   return (
     <Modal isOpen={isOpen} toggle={toggle}>
       <ModalHeader toggle={toggle}>
-        {envio ? "Editar Envío" : "Nuevo Envío"}
+        {formData.idEnvios && formData.idEnvios > 0 ? "Editar Envío" : "Nuevo Envío"}
       </ModalHeader>
       <ModalBody>
         <Form>
           <FormGroup>
-            <Label for="idCliente">Cliente (ID)</Label>
+            <Label for="idCliente">Cliente</Label>
             <Input
-              type="number"
+              type="select"
               id="idCliente"
               name="idCliente"
               value={formData.idCliente}
               onChange={handleChange}
-            />
+            >
+              <option value={0}>Seleccione...</option>
+              {clientes.map((c) => (
+                <option key={c.idClientes} value={c.idClientes}>
+                  {c.nombreCliente}
+                </option>
+              ))}
+            </Input>
           </FormGroup>
+
           <FormGroup>
-            <Label for="idRuta">Ruta (ID)</Label>
+            <Label for="idRuta">Ruta</Label>
             <Input
-              type="number"
+              type="select"
               id="idRuta"
               name="idRuta"
               value={formData.idRuta}
               onChange={handleChange}
-            />
+            >
+              <option value={0}>Seleccione...</option>
+              {rutas.map((r) => (
+                <option key={r.idRuta} value={r.idRuta}>
+                  {r.origen} - {r.destino}
+                </option>
+              ))}
+            </Input>
           </FormGroup>
+
           <FormGroup>
             <Label for="fechaSolicitud">Fecha Solicitud</Label>
             <Input
@@ -135,6 +178,7 @@ export function EnviosModal({
               onChange={handleChange}
             />
           </FormGroup>
+
           <FormGroup>
             <Label for="fechaEntregaEsperada">Fecha Entrega Esperada</Label>
             <Input
@@ -145,6 +189,7 @@ export function EnviosModal({
               onChange={handleChange}
             />
           </FormGroup>
+
           <FormGroup>
             <Label for="estado">Estado</Label>
             <Input
@@ -160,6 +205,7 @@ export function EnviosModal({
               <option value="Entregado">Entregado</option>
             </Input>
           </FormGroup>
+
           <FormGroup>
             <Label for="mercancia">Mercancía</Label>
             <Input
@@ -170,6 +216,7 @@ export function EnviosModal({
               onChange={handleChange}
             />
           </FormGroup>
+
           <FormGroup>
             <Label for="pesoTotal">Peso Total (kg)</Label>
             <Input
@@ -181,6 +228,7 @@ export function EnviosModal({
               onChange={handleChange}
             />
           </FormGroup>
+
           <FormGroup>
             <Label for="volumenTotal">Volumen Total (m³)</Label>
             <Input
@@ -192,6 +240,18 @@ export function EnviosModal({
               onChange={handleChange}
             />
           </FormGroup>
+
+          <FormGroup>
+            <Label for="CostoEnvio">Costo Envío</Label>
+            <Input
+              type="number"
+              step="0.01"
+              id="CostoEnvio"
+              name="CostoEnvio"
+              value={formData.CostoEnvio}
+              onChange={handleChange}
+            />
+          </FormGroup>
         </Form>
       </ModalBody>
       <ModalFooter>
@@ -199,7 +259,7 @@ export function EnviosModal({
           Cancelar
         </Button>
         <Button color="primary" onClick={handleSubmit}>
-          {envio ? "Actualizar" : "Crear"}
+          {formData.idEnvios && formData.idEnvios > 0 ? "Actualizar" : "Crear"}
         </Button>
       </ModalFooter>
     </Modal>
