@@ -5,11 +5,16 @@ import { EnviosLista } from '../components/EnviosLista';
 import { UnidadesLista } from '../components/UnidadesLista'; 
 import { UsuarioLista } from '../components/UsuarioLista';  
 import { ConductoreLista } from '../components/ConductoresLista';
+import { MantenimientoLista } from '../components/MantenimientoLista';
+import { FacturacionLista } from '../components/FacturacionLista'; 
+import Mapa from '../components/Ruta';
 import Dashboard from '../components/Dashboard';
-import { MantenimientoLista } from '../components/MantenimientoLista';// Asegúrate de crear este componente
 
 export default function AdminLayout() {
-  const [view, setView] = useState<'dashboard' | 'clientes' | 'unidades' | 'envios' | 'usuarios' | 'conductores' | 'mantenimiento'>('dashboard'); // Agregar 'mantenimiento'
+  const [view, setView] = useState<
+    'dashboard' | 'clientes' | 'unidades' | 'envios' | 'usuarios' | 'conductores' | 'mantenimiento' | 'facturacion'| 'rutas' 
+  >('dashboard');
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 
   const handleViewChange = (newView: typeof view) => {
@@ -59,17 +64,24 @@ export default function AdminLayout() {
             <i className="bi bi-tools me-2"></i>
             {!sidebarCollapsed && <span>Mantenimiento</span>}
           </button>
+          <button className="nav-link text-white d-flex align-items-center" onClick={() => handleViewChange('facturacion')}>
+            <i className="bi bi-receipt-cutoff me-2"></i>
+            {!sidebarCollapsed && <span>Facturación</span>}
+          </button>
+          <button className="nav-link text-white d-flex align-items-center" onClick={() => handleViewChange('rutas')}>
+            <i className="bi bi-map me-2"></i>
+            {!sidebarCollapsed && <span>Rutas</span>}
+          </button>
+
         </nav>
       </aside>
 
-      {/* Contenedor principal: vertical con header y contenido */}
+      {/* Contenedor principal */}
       <div className="d-flex flex-column flex-grow-1" style={{ minHeight: '100vh' }}>
-        {/* Header */}
         <header className="bg-light p-4 shadow-sm sticky-top" style={{ zIndex: 10 }}>
           <h5 className="mb-0">Panel de Administración</h5>
         </header>
 
-        {/* Contenido principal */}
         <main className="p-4 flex-grow-1 overflow-auto">
           {view === 'dashboard' && <Dashboard handleViewChange={handleViewChange} />}
           {view === 'clientes' && <ClienteLista handleViewChange={handleViewChange} />}
@@ -78,6 +90,8 @@ export default function AdminLayout() {
           {view === 'usuarios' && <UsuarioLista handleViewChange={handleViewChange} />}
           {view === 'conductores' && <ConductoreLista handleViewChange={handleViewChange} />}
           {view === 'mantenimiento' && <MantenimientoLista handleViewChange={handleViewChange} />}
+          {view === 'facturacion' && <FacturacionLista handleViewChange={handleViewChange} />}
+          {view === 'rutas' && <Mapa handleViewChange={handleViewChange} />}
         </main>
       </div>
     </div>

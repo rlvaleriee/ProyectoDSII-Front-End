@@ -13,8 +13,44 @@ interface EnviosListaProps {
   handleViewChange: (view: "dashboard") => void;
 }
 
+const acortarNombreLugar = (nombreCompleto: string): string => {
+  if (!nombreCompleto) return nombreCompleto;
+  
+  
+  const partes = nombreCompleto.split(', ');
+  
+  
+  const indexElSalvador = partes.findIndex(parte => parte.includes('El Salvador'));
+  
+  if (indexElSalvador >= 2) {
+   
+    const ciudad = partes[indexElSalvador - 2];
+    const departamento = partes[indexElSalvador - 1];
+    
+  
+    const deptoLimpio = departamento.replace('Departamento de ', '');
+    
+    return `${ciudad}, ${deptoLimpio}`;
+  }
+  
+  
+  if (partes.length >= 2) {
+    return `${partes[0]}, ${partes[1]}`;
+  }
+  
+  
+  return nombreCompleto.length > 30 ? nombreCompleto.substring(0, 27) + '...' : nombreCompleto;
+};
+
+
+interface IVistaEnvioParaTabla extends IVistaEnvio {
+  origenCorto: string;
+  destinoCorto: string;
+}
+
 export function EnviosLista({ handleViewChange }: EnviosListaProps) {
   const [envios, setEnvios] = useState<IVistaEnvio[]>([]);
+  const [enviosParaTabla, setEnviosParaTabla] = useState<IVistaEnvioParaTabla[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEnvio, setSelectedEnvio] = useState<IEnvios | undefined>();
   const [clientes, setClientes] = useState<ICliente[]>([]);
@@ -67,6 +103,15 @@ export function EnviosLista({ handleViewChange }: EnviosListaProps) {
         }));
 
         setEnvios(enviosLimpios);
+
+        
+        const enviosConNombresCortos: IVistaEnvioParaTabla[] = enviosLimpios.map(envio => ({
+          ...envio,
+          origenCorto: acortarNombreLugar(envio.origen),
+          destinoCorto: acortarNombreLugar(envio.destino),
+        }));
+
+        setEnviosParaTabla(enviosConNombresCortos);
       }
     } catch (error) {
       console.error("Error al obtener envíos:", error);
@@ -102,7 +147,7 @@ export function EnviosLista({ handleViewChange }: EnviosListaProps) {
         const fechaObj = new Date(fecha);
         return fechaObj.toISOString().split('T')[0]; // Formato YYYY-MM-DD
       } catch {
-        return fecha; // Si no se puede convertir, devolver como está
+        return fecha; 
       }
     };
 
@@ -126,12 +171,16 @@ export function EnviosLista({ handleViewChange }: EnviosListaProps) {
     obtenerRutas();
   }, []);
 
-  const abrirModal = (envio?: IVistaEnvio) => {
-    if (envio) {
-      console.log("Envío original de la vista:", envio);
-      const envioConvertido = convertirVistaEnvioAEnvios(envio);
-      console.log("Envío convertido para el modal:", envioConvertido);
-      setSelectedEnvio(envioConvertido);
+  const abrirModal = (envioTabla?: IVistaEnvioParaTabla) => {
+    if (envioTabla) {
+      console.log("Envío original de la vista:", envioTabla);
+      
+      const envioOriginal = envios.find(e => e.idEnvios === envioTabla.idEnvios);
+      if (envioOriginal) {
+        const envioConvertido = convertirVistaEnvioAEnvios(envioOriginal);
+        console.log("Envío convertido para el modal:", envioConvertido);
+        setSelectedEnvio(envioConvertido);
+      }
     } else {
       console.log("Abriendo modal para nuevo envío");
       setSelectedEnvio(undefined);
@@ -164,16 +213,17 @@ export function EnviosLista({ handleViewChange }: EnviosListaProps) {
         </div>
       </div>
 
-      <DataTable<IVistaEnvio>
-        data={envios}
+      
+      <DataTable<IVistaEnvioParaTabla>
+        data={enviosParaTabla}
         searchKeys={[
           "estado",
           "mercancia",
           "fechaSolicitud",
           "fechaEntregaEsperada",
           "cliente",
-          "origen",
-          "destino",
+          "origenCorto", 
+          "destinoCorto", 
         ]}
         itemsPerPageOptions={[5, 10, 15]}
         defaultItemsPerPage={5}
@@ -182,8 +232,26 @@ export function EnviosLista({ handleViewChange }: EnviosListaProps) {
         onNuevo={() => abrirModal()}
         columns={[
           { key: "cliente", label: "Cliente" },
-          { key: "origen", label: "Origen" },
-          { key: "destino", label: "Destino" },
+          { 
+            key: "origenCorto", 
+            label: "Origen",
+            
+            render: (item: IVistaEnvioParaTabla) => (
+              <span title={item.origen}>
+                {item.origenCorto}
+              </span>
+            )
+          },
+          { 
+            key: "destinoCorto", 
+            label: "Destino",
+            
+            render: (item: IVistaEnvioParaTabla) => (
+              <span title={item.destino}>
+                {item.destinoCorto}
+              </span>
+            )
+          },
           { key: "fechaSolicitud", label: "Fecha Solicitud" },
           { key: "fechaEntregaEsperada", label: "Fecha Entrega Esperada" },
           { key: "estado", label: "Estado" },

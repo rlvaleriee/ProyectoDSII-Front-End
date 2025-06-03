@@ -1,7 +1,7 @@
 import { Row, Col, Card, Button } from 'reactstrap';
 
 type DashboardProps = {
-  handleViewChange: (newView: 'dashboard' | 'clientes' | 'unidades' | 'envios') => void;
+  handleViewChange: (newView: 'dashboard' | 'clientes' | 'unidades' | 'envios'| 'rutas') => void;
 };
 
 export default function Dashboard({ handleViewChange }: DashboardProps) {
@@ -15,16 +15,6 @@ export default function Dashboard({ handleViewChange }: DashboardProps) {
             <h5 className="mb-3">Lista de Clientes</h5>
             <Button color="primary" onClick={() => handleViewChange('clientes')}>
               Ver Clientes
-            </Button>
-          </Card>
-        </Col>
-
-        <Col md="6" lg="3">
-          <Card body className="text-center shadow-sm border-0">
-            <i className="bi bi-person-plus-fill fs-1 text-success mb-3"></i>
-            <h5 className="mb-3">Registrar Cliente</h5>
-            <Button color="success" onClick={() => handleViewChange('clientes')}>
-              Nuevo Cliente
             </Button>
           </Card>
         </Col>
@@ -48,6 +38,15 @@ export default function Dashboard({ handleViewChange }: DashboardProps) {
             </Button>
           </Card>
         </Col>
+        <Col md="6" lg="3">
+        <Card body className="text-center shadow-sm border-0">
+          <i className="bi bi-map-fill fs-1 text-warning mb-3"></i>
+          <h5 className="mb-3">Rutas</h5>
+          <Button color="warning" onClick={() => handleViewChange('rutas')}>
+            Ver Rutas
+          </Button>
+        </Card>
+      </Col>
       </Row>
     </>
   );
