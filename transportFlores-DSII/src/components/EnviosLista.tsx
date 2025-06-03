@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { appsettings } from "../settings/appsettings";
 import type { IVistaEnvio } from "../Interfaces/IVistaEnvio";
 import type { IEnvios } from "../Interfaces/IEnvios"; 
+import type { ICliente } from "../Interfaces/ICliente";
+import type { IRuta } from "../Interfaces/IRuta";
 import { EnviosModal } from "./EnviosModal";
 import { Button } from "reactstrap";
 import Swal from "sweetalert2";
@@ -14,7 +16,33 @@ interface EnviosListaProps {
 export function EnviosLista({ handleViewChange }: EnviosListaProps) {
   const [envios, setEnvios] = useState<IVistaEnvio[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedEnvio, setSelectedEnvio] = useState<IVistaEnvio | undefined>();
+  const [selectedEnvio, setSelectedEnvio] = useState<IEnvios | undefined>();
+  const [clientes, setClientes] = useState<ICliente[]>([]);
+  const [rutas, setRutas] = useState<IRuta[]>([]);
+
+  const obtenerClientes = async () => {
+    try {
+      const response = await fetch(`${appsettings.apiUrl}Cliente/Lista`);
+      if (response.ok) {
+        const data = await response.json();
+        setClientes(data);
+      }
+    } catch (error) {
+      console.error("Error al obtener clientes:", error);
+    }
+  };
+
+  const obtenerRutas = async () => {
+    try {
+      const response = await fetch(`${appsettings.apiUrl}Ruta/Lista`);
+      if (response.ok) {
+        const data = await response.json();
+        setRutas(data);
+      }
+    } catch (error) {
+      console.error("Error al obtener rutas:", error);
+    }
+  };
 
   const obtenerEnvios = async () => {
     try {
@@ -65,12 +93,49 @@ export function EnviosLista({ handleViewChange }: EnviosListaProps) {
     }
   };
 
+  // Función para convertir IVistaEnvio a IEnvios
+  const convertirVistaEnvioAEnvios = (vistaEnvio: IVistaEnvio): IEnvios => {
+    // Función auxiliar para convertir fechas al formato correcto
+    const formatearFecha = (fecha: string): string => {
+      if (!fecha) return "";
+      try {
+        const fechaObj = new Date(fecha);
+        return fechaObj.toISOString().split('T')[0]; // Formato YYYY-MM-DD
+      } catch {
+        return fecha; // Si no se puede convertir, devolver como está
+      }
+    };
+
+    return {
+      idEnvios: vistaEnvio.idEnvios,
+      idCliente: vistaEnvio.idCliente,
+      idRuta: vistaEnvio.idRuta,
+      fechaSolicitud: formatearFecha(vistaEnvio.fechaSolicitud),
+      fechaEntregaEsperada: formatearFecha(vistaEnvio.fechaEntregaEsperada),
+      estado: vistaEnvio.estado,
+      mercancia: vistaEnvio.mercancia,
+      pesoTotal: vistaEnvio.peso,
+      volumenTotal: vistaEnvio.volumen,
+      CostoEnvio: vistaEnvio.costo,
+    };
+  };
+
   useEffect(() => {
     obtenerEnvios();
+    obtenerClientes();
+    obtenerRutas();
   }, []);
 
   const abrirModal = (envio?: IVistaEnvio) => {
-    setSelectedEnvio(envio);
+    if (envio) {
+      console.log("Envío original de la vista:", envio);
+      const envioConvertido = convertirVistaEnvioAEnvios(envio);
+      console.log("Envío convertido para el modal:", envioConvertido);
+      setSelectedEnvio(envioConvertido);
+    } else {
+      console.log("Abriendo modal para nuevo envío");
+      setSelectedEnvio(undefined);
+    }
     setModalOpen(true);
   };
 
@@ -132,7 +197,9 @@ export function EnviosLista({ handleViewChange }: EnviosListaProps) {
       <EnviosModal
         isOpen={modalOpen}
         toggle={cerrarModal}
-        
+        envio={selectedEnvio}
+        clientes={clientes}
+        rutas={rutas}
         onSuccess={() => {
           cerrarModal();
           obtenerEnvios();

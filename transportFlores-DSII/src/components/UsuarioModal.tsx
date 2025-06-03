@@ -134,7 +134,6 @@ export function UsuarioModal({
               <option value="">Seleccione...</option>
               <option value="Administrador">Administrador</option>
               <option value="Usuario">Usuario</option>
-              <option value="Invitado">Invitado</option>
             </Input>
           </FormGroup>
         </Form>

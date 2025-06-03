@@ -1,5 +1,5 @@
 export interface IRuta {
-  idRuta: number;
+  idRutas: number;
   origen: string;
   destino: string;
   distancia: number;

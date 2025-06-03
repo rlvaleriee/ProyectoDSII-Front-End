@@ -20,19 +20,37 @@ interface EnviosModalProps {
   isOpen: boolean;
   toggle: () => void;
   envio?: IEnvios;
+  clientes: ICliente[];
+  rutas: IRuta[];
   onSuccess: () => void;
 }
 
-export function EnviosModal({ isOpen, toggle, envio, onSuccess }: EnviosModalProps) {
-  const [clientes, setClientes] = useState<ICliente[]>([]);
-  const [rutas, setRutas] = useState<IRuta[]>([]);
+// Tipo para el estado del formulario que permite strings temporalmente en campos numéricos
+type FormDataState = Omit<IEnvios, 'pesoTotal' | 'volumenTotal' | 'CostoEnvio'> & {
+  pesoTotal: number | string;
+  volumenTotal: number | string;
+  CostoEnvio: number | string;
+};
 
-  const [formData, setFormData] = useState<IEnvios>({
-    idEnvios: 0,
+export function EnviosModal({ 
+  isOpen, 
+  toggle, 
+  envio, 
+  clientes, 
+  rutas, 
+  onSuccess 
+}: EnviosModalProps) {
+  // Función para obtener la fecha actual en formato YYYY-MM-DD
+  const obtenerFechaActual = () => {
+    const fecha = new Date();
+    return fecha.toISOString().split('T')[0];
+  };
+
+  const [formData, setFormData] = useState<FormDataState>({
     idCliente: 0,
     idRuta: 0,
-    fechaSolicitud: "",
-    fechaEntregaEsperada: "",
+    fechaSolicitud: obtenerFechaActual(),
+    fechaEntregaEsperada: obtenerFechaActual(),
     estado: "",
     mercancia: "",
     pesoTotal: 0,
@@ -41,51 +59,55 @@ export function EnviosModal({ isOpen, toggle, envio, onSuccess }: EnviosModalPro
   });
 
   useEffect(() => {
-    if (envio) {
-      setFormData({ ...envio });
-    } else {
-      setFormData({
-        idEnvios: 0,
-        idCliente: 0,
-        idRuta: 0,
-        fechaSolicitud: "",
-        fechaEntregaEsperada: "",
-        estado: "",
-        mercancia: "",
-        pesoTotal: 0,
-        volumenTotal: 0,
-        CostoEnvio: 0,
-      });
+    if (isOpen) {
+      console.log("Modal abierto. Envío recibido:", envio);
+      if (envio) {
+        // Editando: cargar datos del envío
+        const datosFormulario = {
+          idEnvios: envio.idEnvios,
+          idCliente: envio.idCliente,
+          idRuta: envio.idRuta,
+          fechaSolicitud: envio.fechaSolicitud,
+          fechaEntregaEsperada: envio.fechaEntregaEsperada,
+          estado: envio.estado,
+          mercancia: envio.mercancia,
+          pesoTotal: envio.pesoTotal,
+          volumenTotal: envio.volumenTotal,
+          CostoEnvio: envio.CostoEnvio,
+        };
+        console.log("Datos que se cargarán en el formulario:", datosFormulario);
+        setFormData(datosFormulario);
+      } else {
+        // Nuevo: resetear con valores por defecto
+        const datosNuevos = {
+          idCliente: 0,
+          idRuta: 0,
+          fechaSolicitud: obtenerFechaActual(),
+          fechaEntregaEsperada: obtenerFechaActual(),
+          estado: "",
+          mercancia: "",
+          pesoTotal: 0,
+          volumenTotal: 0,
+          CostoEnvio: 0,
+        };
+        console.log("Nuevo envío, datos iniciales:", datosNuevos);
+        setFormData(datosNuevos);
+      }
     }
   }, [envio, isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const fetchData = async () => {
-      try {
-        const clientesResp = await fetch(`${appsettings.apiUrl}Cliente/Lista`);
-        if (clientesResp.ok) setClientes(await clientesResp.json());
-
-        const rutasResp = await fetch(`${appsettings.apiUrl}Ruta/Lista`);
-        if (rutasResp.ok) setRutas(await rutasResp.json());
-      } catch (error) {
-        console.error("Error al cargar datos:", error);
-      }
-    };
-
-    fetchData();
-  }, [isOpen]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
+    
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        type === "number" || e.target.tagName === "SELECT"
-          ? value === "" ? 0 : Number(value)
+      [name]: 
+        type === "number"
+          ? value === "" ? "" : Number(value) // Permitir string vacío temporalmente
+          : name === "idCliente" || name === "idRuta"
+          ? Number(value)
           : value,
     }));
   };
@@ -97,7 +119,15 @@ export function EnviosModal({ isOpen, toggle, envio, onSuccess }: EnviosModalPro
     }
 
     try {
-      const method = formData.idEnvios && formData.idEnvios > 0 ? "PUT" : "POST";
+      // Preparar datos para envío, convirtiendo strings vacíos a 0
+      const dataToSend = {
+        ...formData,
+        pesoTotal: formData.pesoTotal === "" ? 0 : Number(formData.pesoTotal),
+        volumenTotal: formData.volumenTotal === "" ? 0 : Number(formData.volumenTotal),
+        CostoEnvio: formData.CostoEnvio === "" ? 0 : Number(formData.CostoEnvio),
+      };
+
+      const method = formData.idEnvios ? "PUT" : "POST";
       const url =
         method === "PUT"
           ? `${appsettings.apiUrl}Envio/Editar`
@@ -106,7 +136,7 @@ export function EnviosModal({ isOpen, toggle, envio, onSuccess }: EnviosModalPro
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(dataToSend),
       });
 
       if (response.ok) {
@@ -128,7 +158,7 @@ export function EnviosModal({ isOpen, toggle, envio, onSuccess }: EnviosModalPro
   return (
     <Modal isOpen={isOpen} toggle={toggle}>
       <ModalHeader toggle={toggle}>
-        {formData.idEnvios && formData.idEnvios > 0 ? "Editar Envío" : "Nuevo Envío"}
+        {formData.idEnvios ? "Editar Envío" : "Nuevo Envío"}
       </ModalHeader>
       <ModalBody>
         <Form>
@@ -161,7 +191,7 @@ export function EnviosModal({ isOpen, toggle, envio, onSuccess }: EnviosModalPro
             >
               <option value={0}>Seleccione...</option>
               {rutas.map((r) => (
-                <option key={r.idRuta} value={r.idRuta}>
+                <option key={r.idRutas} value={r.idRutas}>
                   {r.origen} - {r.destino}
                 </option>
               ))}
@@ -259,7 +289,7 @@ export function EnviosModal({ isOpen, toggle, envio, onSuccess }: EnviosModalPro
           Cancelar
         </Button>
         <Button color="primary" onClick={handleSubmit}>
-          {formData.idEnvios && formData.idEnvios > 0 ? "Actualizar" : "Crear"}
+          {formData.idEnvios ? "Actualizar" : "Crear"}
         </Button>
       </ModalFooter>
     </Modal>
